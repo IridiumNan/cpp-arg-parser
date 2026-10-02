@@ -306,6 +306,12 @@ inline Argument& ArgParser::add_argument(
     if (name.empty()) {
         throw std::invalid_argument("Argument name must not be empty");
     }
+
+    // Throw error if argument name or alias begin with '-'
+    if (name[0] == '-' || (alias.has_value() && alias.value()[0] == '-')) {
+        throw std::invalid_argument("Argument name should not begin with leading dashes: " + name + (alias.has_value() ? ", " + alias.value() : ""));
+    }
+
     // Validate that the argument name and alias are not already registered.
     if (is_registered(name)) {
         throw std::invalid_argument("Argument already registered: " + name);

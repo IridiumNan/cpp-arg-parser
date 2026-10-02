@@ -51,9 +51,20 @@ Copy `arg_parser.hpp` into your project's include directory, then use:
 
 ## Quick start
 
+This can be used as follows
+
+- Step 1: **Add expected arguments**
+
+- Step 2: **Parse all args**
+
+- Step 3: **Fetch argument with type assign**
+
+Here is an comprehensive example
+
 ```cpp
 #include "arg_parser.hpp"
 #include <iostream>
+#include <string>
 
 #ifdef _WIN32
 int wmain(int argc, wchar_t* argv[])
@@ -63,18 +74,43 @@ int main(int argc, char* argv[])
 {
     using arg_parser::ArgType;
     arg_parser::ArgParser parser;
+
+    // step 1: add expected args
+    /// description, default value can be setted by set_xxx function
     parser.set_program_name("example");
     parser.add_argument("input").set_default("input.png").set_description("Input file");
     parser.add_argument("output", "o", ArgType::Option).set_default("output.txt");
     parser.add_argument("count", "c", ArgType::Option).set_default("80");
     parser.add_argument("verbose", "v", ArgType::Flag).set_default("false");
     parser.add_argument("help", "h", ArgType::Flag).set_description("Show help");
-    parser.parse(argc, argv);
+
+    // step 2: parse all args
+    // using try-catch is recommended
+    try {
+        parser.parse(argc, argv);
+    }
+    catch (const std::exception& error) {
+        std::cerr << "Failed to parse arguments: " << error.what() << '\n';
+        parser.help();
+        return 22;
+    }
+    
+    // if help is provided, parser can print a comprehensive help manual for all arguments registered
     if (parser.has("help")) { parser.help(); return 0; }
-    // Value retrieval and exception handling omitted; see example.cpp.
+
+    // step 3: fetch argument with type assign
+    // it will return default value if it is not provided and has default value
+    std::cout << "output: " << parser.get<std::string>("output") << '\n';
+    std::cout << parser.get<int>("count") << '\n'
+    
     return 0;
 }
 ```
+
+> [!NOTE]
+> It will throw error if you add an argument starting with a leading dash
+>
+> For example, `parser.add_argument("--test", "-t", ArgType::Flag);`
 
 Value retrieval and exception handling are omitted here for brevity;
 see [example.cpp](example.cpp) for the complete example.
