@@ -88,21 +88,21 @@ int main(int argc, char* argv[])
     // using try-catch is recommended
     try {
         parser.parse(argc, argv);
+
+        // if help is provided, parser can print a comprehensive help manual for all arguments registered
+        if (parser.has("help")) { parser.help(); return 0; }
+
+        // step 3: fetch argument with type assign
+        // it will return default value if it is not provided and has default value
+        std::cout << "output: " << parser.get<std::string>("output") << '\n';
+        std::cout << parser.get<int>("count") << '\n';
     }
     catch (const std::exception& error) {
-        std::cerr << "Failed to parse arguments: " << error.what() << '\n';
+        std::cerr << "Failed to process arguments: " << error.what() << '\n';
         parser.help();
         return 22;
     }
-    
-    // if help is provided, parser can print a comprehensive help manual for all arguments registered
-    if (parser.has("help")) { parser.help(); return 0; }
 
-    // step 3: fetch argument with type assign
-    // it will return default value if it is not provided and has default value
-    std::cout << "output: " << parser.get<std::string>("output") << '\n';
-    std::cout << parser.get<int>("count") << '\n'
-    
     return 0;
 }
 ```
@@ -112,8 +112,7 @@ int main(int argc, char* argv[])
 >
 > For example, `parser.add_argument("--test", "-t", ArgType::Flag);`
 
-Value retrieval and exception handling are omitted here for brevity;
-see [example.cpp](example.cpp) for the complete example.
+See [example.cpp](example.cpp) for the complete example.
 
 On Windows, the example uses `wmain` to preserve Unicode arguments.
 
