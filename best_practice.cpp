@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     parser.add_argument("recursive", "r")
         .set_description("copy directories recursively");
 
+    parser.add_argument("help", "h").set_description("print help manual");
     try {
         parser.parse(argc, argv);
 
@@ -48,6 +49,12 @@ int main(int argc, char *argv[])
         // so let it empty
         std::cout << parser.help();
         return 1;
+    }
+
+    // resolve the help case
+    if (parser.get<bool>("h")) {
+        std::cout << parser.help();
+        return 0;
     }
 
     if (parser.size() != 2) {

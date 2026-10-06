@@ -76,6 +76,10 @@ int main(int argc, char *argv[])
         .set_description("Place the output into <file>.")
         .set_required(true);
 
+    parser.add_argument("help", "h")
+        .set_description("")
+        .set_description("print help manual");
+
     try {
         // step 2: parse arguments directly
         // WARN: Don't use the vector version unless you know what you're doing
@@ -101,13 +105,13 @@ int main(int argc, char *argv[])
 - compile
 
 ```bash
-g++ -std=c++17 example.cpp -o example
+g++ -std=c++17 example.cpp -o bin/example
 ```
 
 - run
 
 ```bash
-./example photo.png -o result.txt -v
+bin/example photo.png -o result.txt -v
 
 # output
 0 pos: photo.png
@@ -116,7 +120,7 @@ output: result.txt
 ```
 
 ```bash
-./example -o bin/main hello -- --port world
+bin/example -o bin/main hello -- --port world
 
 #output
 # all arguments behind -- will be treated as positional args
@@ -130,7 +134,7 @@ output: bin/main
 - auto help manual generation (for Options)
 
 ```bash
-./example example.cpp main.cpp
+bin/example example.cpp main.cpp
 # output
 Required argument not provided: output
 Usage: 
@@ -141,6 +145,8 @@ Options:
       if true, print with verbose output
   --output, -o <value>
       Place the output into <file>.
+  --help, -h
+      print help manual
 ```
 
 On Windows with MinGW, use `wmain` and add `-municode`:
@@ -171,7 +177,7 @@ int wmain(int argc, wchar_t* argv[])
 - Values starting with `-` require `=`: `--count=-12` works, `--count -12` does not.
 - Combined short flags like `-vh` are not supported.
 - Call `parse()` once per instance.
-- `-h` / `--help` are not automatic — check `parser.has("help")` yourself.
+- `-h` / `--help` are not automatic — check `parser.get<bool>("help")` yourself.
 
 ## Test
 
@@ -186,3 +192,9 @@ g++ -std=c++17 -I. -o bin/test ./test_arg_parser.cpp && bin/test
 ## License
 
 [MIT](/LICENSE)
+
+## Thanks
+
+Thanks to <https://github.com/KAI-SHUNG> who write the first version of this parser
+
+See <https://github.com/KAI-SHUNG/arg_parser>
