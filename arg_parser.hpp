@@ -1,6 +1,7 @@
 #ifndef ARG_PARSER_HPP
 #define ARG_PARSER_HPP
 
+#include <cstdio>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -15,36 +16,65 @@ namespace arg_parser {
 enum class ArgType {
     Flag,
     Option,
-    Positional
 };
 
 struct Argument {
-    ArgType                    type;
-    std::string                name;
-    std::optional<std::string> alias;
-    std::optional<std::string> default_value;
-    std::string                description;
-    bool                       required = false;
+    ArgType type;
+    // name of argument, e.g port, debug, verbose
+    std::string name;
 
-    Argument& set_default(const std::string& default_val);
-    Argument& set_description(const std::string& desc);
-    Argument& set_required(bool req);
+    // alias is the short name of argument e.g. p, d, v
+    std::optional<std::string> alias;
+
+    // The value of this argument
+    // For [ArgType::Flag] it will be true or false (string)
+    // For [ArgType::Option] it can be any string
+    std::optional<std::string> value;
+
+    // description that will be printed on help manual
+    std::string description;
+
+    // if required, it will throw error if this arguments is not provided
+    bool required = false;
+
+    /**
+     * @brief Set the default value for this option
+     * if a [ArgType::Flag], it must be "false" or "true"
+     * else it will throw an error
+     * */
+    Argument &set_default(const std::string &default_val);
+    Argument &set_description(const std::string &desc);
+    Argument &set_required(bool req);
 };
 
 class ArgParser {
-private:
-    std::vector<std::shared_ptr<Argument>>                     registery;
-    std::vector<std::shared_ptr<Argument>>                     positional_registery;
+  private:
+    std::vector<std::shared_ptr<Argument>> registery;
+
+    // a map from name (and alias) to argument
     std::unordered_map<std::string, std::shared_ptr<Argument>> name_to_arg;
-    std::unordered_map<std::string, std::string>               parsed;
 
-    std::string program_name = "";
-    std::string note         = "";
+    // parsed store arguments that has been provided
+    // including [ArgType::Flag] and [ArgType::Option]
+    // key is the name of argument
+    // value is the value
+    std::unordered_map<std::string, std::string> parsed;
 
-    bool is_registered(const std::string& name) const;
+    // positional args store all arguments without register
+    // You can visit all by [at] function
+    std::vector<std::string> positional_args;
+
+    std::string program_name;
+    std::string note;
+
+    // canonical return canonical name of alias or name itself
+    const std::string canonical_name(const std::string &name) const;
+
+    bool is_registered(const std::string &name) const;
+
     void check_required_arguments() const;
 
-    static std::vector<std::string> normalize_args(int argc, char** argv);
+    std::vector<std::string> normalize_args(int argc, char **argv);
 #ifdef _WIN32
     /**
      * @brief Encode one Windows command-line argument as UTF-8.
@@ -53,75 +83,93 @@ private:
      *
      * @return UTF-8 string without its terminating null byte.
      */
-    static std::string              to_utf8(const wchar_t* value);
-    static std::vector<std::string> normalize_args(int argc, wchar_t** argv);
+    static std::string to_utf8(const wchar_t *value);
+    static std::vector<std::string> normalize_args(int argc, wchar_t **argv);
 #endif
 
-public:
+  public:
     /**
      * @brief Set the program name for usage messages.
+     * if not set, it will be the first argument when program exec
      */
-    void set_program_name(const std::string& name)
-    { program_name = name; }
+    void set_program_name(const std::string &name) { program_name = name; }
 
     /**
      * @brief Set a note to be displayed after the help message.
      */
-    void set_note(const std::string& n)
-    { note = n; }
+    void set_note(const std::string &n) { note = n; }
 
     /**
-     * @brief Add a new argument to the parser, suggest chain calls to set its properties.
+     * @brief Add a new argument to the parser, suggest chain calls to set its
+     * properties.
      *
      * @param name The name without leading dashes; must be unique.
      * @param alias The optional alias without leading dashes; must be unique.
-     * @param type The type of the argument.
+     * @param type The type of the argument. default bool Flag;
+     * You can also use [ArgType::Option] for arguments that require value
      *
      * @return A reference to the newly added argument.
      */
-    Argument& add_argument(
-        const std::string&                name,
-        const std::optional<std::string>& alias = std::nullopt,
-        ArgType                           type  = ArgType::Positional);
+    Argument &
+    add_argument(const std::string &name,
+                 const std::optional<std::string> &alias = std::nullopt,
+                 ArgType type = ArgType::Flag);
 
     /**
      * @brief Check if an argument has been provided.
      * Both the argument name and its alias are supported.
      * @param name The name or alias of the argument to check.
      */
-    bool has(const std::string& name) const;
+    bool has(const std::string &name) const;
 
     /**
-     * @brief Display help message for all registered arguments.
+     * @brief build help message for all registered arguments, return a string.
+     * @param usage is the basic positional argument and program intruduction
+     * the optional the flag description are auto generated
      */
-    void help() const;
+    std::string help(const std::optional<std::string> &usage) const;
 
     /**
      * @brief
      * Get the value of an argument.
      * If the argument is registered but not provided,
      * return the default value if set, otherwise throw an exception.
-     * @param name alias name are not supported.
+     * @param name alias name are supported.
      */
-    template <typename T>
-    T get(const std::string& name) const;
+    template <typename T> T get(const std::string &name) const;
+
+    /**
+     * @brief
+     * Return the positional arguments count
+     * */
+    size_t size() const { return positional_args.size(); }
+    /**
+     * @brief
+     * Get positional arguments by index
+     * if out of range, it will throw [std::out_of_range]
+     * */
+    std::string at(size_t idx) const;
 
     /**
      * @brief parse command-line arguments.
      */
-    void parse(int argc, char** argv);
+    void parse(int argc, char **argv);
 
 #ifdef _WIN32
     /**
      * @brief parse command-line arguments (Windows version).
      */
-    void parse(int argc, wchar_t** argv);
+    void parse(int argc, wchar_t **argv);
 #endif
 
     /**
      * @brief parse normalized command-line arguments.
+     * WARN: This function is defined for test
+     * If you want to use it, you should remove the program name from vector
+     * You should provide ["main.cpp", "arg.cpp", "-o", "bin/main"]
+     * instead of ["g++", "main.cpp", "arg.cpp", "-o", "bin/main"]
      */
-    void parse(const std::vector<std::string>& args);
+    void parse(const std::vector<std::string> &args);
 };
 
 } // namespace arg_parser
@@ -129,85 +177,82 @@ public:
 // Implementation of template methods.
 
 template <typename T>
-T arg_parser::ArgParser::get(const std::string& name) const
-{
+T arg_parser::ArgParser::get(const std::string &name) const {
+    if (!is_registered(name)) {
+        throw std::invalid_argument("Argument not registered: " + name);
+    }
+    // Resolve alias -> canonical name once.
+    const auto arg_ptr = name_to_arg.at(name);
+    const std::string &canonical = arg_ptr->name;
+
+    std::string arg;
+    auto it = parsed.find(canonical);
+    if (it == parsed.end()) {
+        if (arg_ptr->value.has_value()) {
+            arg = arg_ptr->value.value();
+        } else {
+            throw std::invalid_argument("Argument not provided: " + name);
+        }
+    } else {
+        arg = it->second;
+    }
     // Handle the case where the argument is not registered.
     if (!is_registered(name)) {
         throw std::invalid_argument("Argument not registered: " + name);
     }
 
-    std::string arg;
-    // Handle the case where the argument is registered but not provided.
-    if (!has(name)) {
-        if (name_to_arg.at(name)->default_value.has_value()) {
-            arg = name_to_arg.at(name)->default_value.value();
-        }
-        else {
-            throw std::invalid_argument("Argument not provided: " + name);
-        }
-    }
-    // Handle the case where the argument is registered and provided.
-    else {
-        arg = parsed.at(name);
-    }
-
-    T                 result;
+    T result;
     std::stringstream ss(arg);
 
     if (!(ss >> result)) {
-        throw std::invalid_argument(
-            "Failed to convert argument '" + name + "' with value '" + arg + "'");
+        throw std::invalid_argument("Failed to convert argument '" + name +
+                                    "' with value '" + arg + "'");
     }
     // Check for any remaining characters in the stream after reading the value
-    // For example, want a integer, input is "123abc" -> 123 is read, but "abc" remains
+    // For example, want a integer, input is "123abc" -> 123 is read, but "abc"
+    // remains
     ss >> std::ws;
     if (!ss.eof()) {
-        throw std::invalid_argument(
-            "Invalid value for argument '" + name + "': '" + arg + "'");
+        throw std::invalid_argument("Invalid value for argument '" + name +
+                                    "': '" + arg + "'");
     }
     return result;
 }
 
 template <>
-inline std::string arg_parser::ArgParser::get<std::string>(const std::string& name) const
-{
+inline std::string
+arg_parser::ArgParser::get<std::string>(const std::string &name) const {
     // Handle the case where the argument is not registered.
     if (!is_registered(name)) {
         throw std::invalid_argument("Argument not registered: " + name);
     }
 
-    // Handle the case where the argument is registered but not provided.
-    if (!has(name)) {
-        if (name_to_arg.at(name)->default_value.has_value()) {
-            return name_to_arg.at(name)->default_value.value();
-        }
-        else {
-            throw std::invalid_argument("Argument not provided: " + name);
-        }
+    const auto arg_ptr = name_to_arg.at(name);
+    auto it = parsed.find(arg_ptr->name);
+    if (it != parsed.end()) {
+        return it->second;
     }
-
-    return parsed.at(name);
+    if (arg_ptr->value.has_value()) {
+        return arg_ptr->value.value();
+    }
+    throw std::invalid_argument("Argument not provided: " + arg_ptr->name);
 }
 
 template <>
-inline bool arg_parser::ArgParser::get<bool>(const std::string& name) const
-{
+inline bool arg_parser::ArgParser::get<bool>(const std::string &name) const {
     // Handle the case where the argument is not registered.
     if (!is_registered(name)) {
         throw std::invalid_argument("Argument not registered: " + name);
     }
-
-    // Handle the case where the argument is registered but not provided.
-    if (!has(name)) {
-        if (name_to_arg.at(name)->default_value.has_value()) {
-            return name_to_arg.at(name)->default_value.value() == "true";
-        }
-        else {
-            throw std::invalid_argument("Argument not provided: " + name);
-        }
+    const auto arg_ptr = name_to_arg.at(name);
+    auto it = parsed.find(arg_ptr->name);
+    if (it != parsed.end()) {
+        return it->second == "true";
     }
-
-    return parsed.at(name) == "true";
+    if (arg_ptr->value.has_value()) {
+        return arg_ptr->value.value() == "true";
+    }
+    throw std::invalid_argument("Argument not provided: " + name);
 }
 
 #ifdef _WIN32
@@ -217,43 +262,48 @@ namespace arg_parser {
 
 /// Argument class member functions
 
-inline Argument& Argument::set_default(const std::string& default_val)
-{
-    default_value = default_val;
+inline Argument &Argument::set_default(const std::string &default_val) {
+    if (this->type == ArgType::Flag) {
+        if (default_val != "true" && default_val != "false") {
+            throw std::invalid_argument(
+                "A flag default value should be true or false");
+        }
+    }
+    value = default_val;
     return *this;
 }
 
-inline Argument& Argument::set_description(const std::string& desc)
-{
+inline Argument &Argument::set_description(const std::string &desc) {
     description = desc;
     return *this;
 }
 
-inline Argument& Argument::set_required(bool req)
-{
+inline Argument &Argument::set_required(bool req) {
     required = req;
     return *this;
 }
 
 // ArgParser member functions
 
-inline bool ArgParser::is_registered(const std::string& name) const
-{
+inline bool ArgParser::is_registered(const std::string &name) const {
     return name_to_arg.count(name) > 0;
 }
 
-inline void ArgParser::check_required_arguments() const
-{
-    for (const auto& arg : registery) {
+inline void ArgParser::check_required_arguments() const {
+    for (const auto &arg : registery) {
         if (arg->required && !has(arg->name)) {
-            throw std::invalid_argument("Required argument not provided: " + arg->name);
+            throw std::invalid_argument("Required argument not provided: " +
+                                        arg->name);
         }
     }
 }
 
-inline std::vector<std::string> ArgParser::normalize_args(int argc, char** argv)
-{
+inline std::vector<std::string> ArgParser::normalize_args(int argc,
+                                                          char **argv) {
     std::vector<std::string> args;
+    if (program_name.empty() && args.size() > 0) {
+        program_name = args.front();
+    }
     args.reserve(argc > 1 ? argc - 1 : 0);
 
     for (int i = 1; i < argc; ++i) {
@@ -264,11 +314,10 @@ inline std::vector<std::string> ArgParser::normalize_args(int argc, char** argv)
 }
 
 #ifdef _WIN32
-inline std::string ArgParser::to_utf8(const wchar_t* value)
-{
+inline std::string ArgParser::to_utf8(const wchar_t *value) {
     // Query the required buffer length, including the terminating null byte.
-    const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS,
-                                           value, -1, nullptr, 0, nullptr, nullptr);
+    const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value,
+                                           -1, nullptr, 0, nullptr, nullptr);
     if (length == 0) {
         throw std::runtime_error("Cannot encode image path as UTF-8");
     }
@@ -276,16 +325,15 @@ inline std::string ArgParser::to_utf8(const wchar_t* value)
     // Encode into owned storage and remove the API's null terminator.
     std::string utf8(static_cast<std::size_t>(length), '\0');
     if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value, -1,
-                            utf8.data(), length, nullptr, nullptr)
-        == 0) {
+                            utf8.data(), length, nullptr, nullptr) == 0) {
         throw std::runtime_error("Cannot encode image path as UTF-8");
     }
     utf8.pop_back();
     return utf8;
 }
 
-inline std::vector<std::string> ArgParser::normalize_args(int argc, wchar_t** argv)
-{
+inline std::vector<std::string> ArgParser::normalize_args(int argc,
+                                                          wchar_t **argv) {
     std::vector<std::string> args;
     args.reserve(argc > 1 ? argc - 1 : 0);
 
@@ -297,11 +345,9 @@ inline std::vector<std::string> ArgParser::normalize_args(int argc, wchar_t** ar
 }
 #endif
 
-inline Argument& ArgParser::add_argument(
-    const std::string&                name,
-    const std::optional<std::string>& alias,
-    ArgType                           type)
-{
+inline Argument &
+ArgParser::add_argument(const std::string &name,
+                        const std::optional<std::string> &alias, ArgType type) {
     // Validate the argument name and alias.
     if (name.empty()) {
         throw std::invalid_argument("Argument name must not be empty");
@@ -309,7 +355,9 @@ inline Argument& ArgParser::add_argument(
 
     // Throw error if argument name or alias begin with '-'
     if (name[0] == '-' || (alias.has_value() && alias.value()[0] == '-')) {
-        throw std::invalid_argument("Argument name should not begin with leading dashes: " + name + (alias.has_value() ? ", " + alias.value() : ""));
+        throw std::invalid_argument(
+            "Argument name should not begin with leading dashes: " + name +
+            (alias.has_value() ? ", " + alias.value() : ""));
     }
 
     // Validate that the argument name and alias are not already registered.
@@ -317,31 +365,27 @@ inline Argument& ArgParser::add_argument(
         throw std::invalid_argument("Argument already registered: " + name);
     }
     if (alias.has_value() && is_registered(alias.value())) {
-        throw std::invalid_argument("Argument already registered: " + alias.value());
+        throw std::invalid_argument("Argument already registered: " +
+                                    alias.value());
     }
 
-    auto arg   = std::make_shared<Argument>();
-    arg->name  = name;
+    auto arg = std::make_shared<Argument>();
+    arg->name = name;
     arg->alias = alias;
-    arg->type  = type;
+    arg->type = type;
     registery.push_back(arg);
 
-    // Add the argument to the name-to-argument map for both the canonical name and the alias (if provided).
+    // Add the argument to the name-to-argument map for both the canonical name
+    // and the alias (if provided).
     name_to_arg[name] = arg;
     if (alias.has_value()) {
         name_to_arg[alias.value()] = arg;
     }
 
-    // If the argument is positional, add it to the positional registry.
-    if (type == ArgType::Positional) {
-        positional_registery.push_back(arg);
-    }
-
     return *arg;
 }
 
-inline bool ArgParser::has(const std::string& name) const
-{
+inline bool ArgParser::has(const std::string &name) const {
     if (!is_registered(name)) {
         return false;
     }
@@ -350,15 +394,18 @@ inline bool ArgParser::has(const std::string& name) const
     return parsed.count(canonical_name) > 0;
 }
 
-inline void ArgParser::help() const
-{
-    std::string usage = "Usage: " + program_name + " [options]";
-    for (const auto& arg : positional_registery) {
-        usage += " <" + arg->name + "> ";
+inline std::string
+ArgParser::help(const std::optional<std::string> &usage = std::nullopt) const {
+
+    std::ostringstream help_str;
+    if (usage != std::nullopt) {
+        help_str << usage.value() << '\n';
+    } else {
+        help_str << program_name << '\n';
     }
-    std::cout << usage << "\n\n";
-    std::cout << "Options:\n";
-    for (const auto& arg : registery) {
+    help_str << "Options: \n";
+
+    for (const auto &arg : registery) {
         std::string option_str = "  --" + arg->name;
         if (arg->alias.has_value()) {
             option_str += ", -" + arg->alias.value();
@@ -366,31 +413,44 @@ inline void ArgParser::help() const
         if (arg->type == ArgType::Option) {
             option_str += " <value>";
         }
-        std::cout << option_str << "\n      " << arg->description << "\n";
+        help_str << option_str << "\n      " << arg->description << "\n";
     }
-    if (!note.empty()) {
-        std::cout << "\n"
-                  << note << "\n";
-    }
+
+    return help_str.str();
 }
 
-inline void ArgParser::parse(int argc, char** argv)
-{
+inline void ArgParser::parse(int argc, char **argv) {
     auto args = normalize_args(argc, argv);
     parse(args);
 }
 
 #ifdef _WIN32
-inline void ArgParser::parse(int argc, wchar_t** argv)
-{
+inline void ArgParser::parse(int argc, wchar_t **argv) {
     auto args = normalize_args(argc, argv);
     parse(args);
 }
 #endif
 
-inline void ArgParser::parse(const std::vector<std::string>& args)
-{
-    bool        options_ended    = false;
+inline std::string arg_parser::ArgParser::at(size_t idx) const {
+    size_t p_size = positional_args.size();
+    if (idx >= p_size) {
+
+        std::ostringstream error_msg;
+        if (p_size > 0) {
+            error_msg << "max_index is " << p_size - 1 << ", got: " << idx
+                      << '\n';
+        } else {
+
+            error_msg << "no argument provided as positional\n";
+        }
+        throw std::out_of_range(error_msg.str());
+    }
+
+    return positional_args.at(idx);
+}
+
+inline void ArgParser::parse(const std::vector<std::string> &args) {
+    bool options_ended = false;
     std::size_t positional_index = 0;
     std::string arg;
 
@@ -403,30 +463,29 @@ inline void ArgParser::parse(const std::vector<std::string>& args)
             continue;
         }
 
-        // If options have ended or the argument does not start with a dash, treat it as a positional argument.
+        // If options have ended or the argument does not start with a dash,
+        // treat it as a positional argument.
         if (options_ended || arg.empty() || arg[0] != '-') {
-            if (positional_index >= positional_registery.size()) {
-                throw std::invalid_argument("Unexpected positional argument: " + arg);
-            }
-
-            auto positional_arg          = positional_registery[positional_index++];
-            parsed[positional_arg->name] = arg;
+            // this should be a positional argument, push it directly
+            positional_args.push_back(arg);
             continue;
         }
 
-        // Determine the start index for the argument name, skipping leading dashes.
+        // Determine the start index for the argument name, skipping leading
+        // dashes.
         int start_index = 1;
         if (arg.size() > 1 && arg[1] == '-') {
             start_index = 2;
         }
-        // Check if the argument contains an equals sign, which indicates a key-value pair.
+        // Check if the argument contains an equals sign, which indicates a
+        // key-value pair.
         bool equals_sign = arg.find('=') != std::string::npos;
 
         // Extract the argument name and check if it is registered.
         std::string name;
-        name = arg.substr(
-            start_index,
-            (equals_sign ? arg.find('=') : arg.size()) - start_index);
+        name =
+            arg.substr(start_index, (equals_sign ? arg.find('=') : arg.size()) -
+                                        start_index);
         if (!is_registered(name)) {
             throw std::invalid_argument("Unrecognized argument: " + arg);
         }
@@ -436,28 +495,28 @@ inline void ArgParser::parse(const std::vector<std::string>& args)
         }
 
         std::string value;
-        auto        argument = name_to_arg.at(name);
-        if (argument->type == ArgType::Positional) {
-            throw std::invalid_argument("Positional argument cannot be provided as an option: " + arg);
-        }
+        auto argument = name_to_arg.at(name);
+
         // Extract the argument value.
         if (argument->type == ArgType::Flag) {
             if (equals_sign) {
-                throw std::invalid_argument("Flag argument cannot have a value: " + arg);
+                throw std::invalid_argument(
+                    "Flag argument cannot have a value: " + arg);
             }
 
             value = "true";
-        }
-        else if (argument->type == ArgType::Option) {
+        } else if (argument->type == ArgType::Option) {
             if (equals_sign) {
                 value = arg.substr(arg.find('=') + 1);
                 if (value.empty()) {
-                    throw std::invalid_argument("Missing value for argument: " + arg);
+                    throw std::invalid_argument("Missing value for argument: " +
+                                                arg);
                 }
-            }
-            else {
-                if (i + 1 >= args.size() || args[i + 1].empty() || args[i + 1][0] == '-') {
-                    throw std::invalid_argument("Missing value for argument: " + arg);
+            } else {
+                if (i + 1 >= args.size() || args[i + 1].empty() ||
+                    args[i + 1][0] == '-') {
+                    throw std::invalid_argument("Missing value for argument: " +
+                                                arg);
                 }
                 value = args[++i];
             }
