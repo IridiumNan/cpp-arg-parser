@@ -153,14 +153,17 @@ int wmain(int argc, wchar_t* argv[])
 
 | Function | Description |
 | --- | --- |
+| `ArgParger(program_name, usage)` | Create a new parser |
 | `add_argument(name, alias = nullopt, type = ArgType::Flag)` | Register an argument. |
+| `set_program_name(program_name)` | Set program name for parser |
+| `set_usage(usage)` | Set usage for parser |
 | `set_default(value)` | Set a default value. |
 | `set_description(text)` | Set the help description. |
 | `set_required(true)` | Throw if the argument is not provided. |
 | `parse(argc, argv)` | Parse `main` arguments (skips `argv[0]`). |
 | `has(name)` | Check if provided, by name or alias. |
 | `get<T>(name)` | Get a typed value, by name or alias. |
-| `help(usage)` | Return the help text. |
+| `help()` | Return the help text. |
 | `size()` / `at(i)` | Access positional arguments. |
 
 ## Notes
