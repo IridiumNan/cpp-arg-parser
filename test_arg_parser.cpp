@@ -243,7 +243,8 @@ static void test_get_not_provided_throws() {
     p.add_argument("verbose", "v");
     p.parse(v({}));
     CHECK_THROWS_AS(p.get<int>("port"), std::invalid_argument);
-    CHECK_THROWS_AS(p.get<bool>("verbose"), std::invalid_argument);
+    // NOTE: New feature: set default false automatically
+    CHECK(p.get<bool>("verbose") == false);
 }
 
 static void test_get_type_conversions() {

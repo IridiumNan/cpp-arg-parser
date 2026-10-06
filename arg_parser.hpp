@@ -1,8 +1,6 @@
 #ifndef ARG_PARSER_HPP
 #define ARG_PARSER_HPP
 
-#include <cstdio>
-#include <iostream>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -78,9 +76,6 @@ class ArgParser {
     std::vector<std::string> positional_args;
 
     std::string program_name;
-
-    // canonical return canonical name of alias or name itself
-    const std::string canonical_name(const std::string &name) const;
 
     // check if a argument has been registered by [add_argument] function
     bool is_registered(const std::string &name) const;
@@ -475,7 +470,6 @@ inline std::string arg_parser::ArgParser::at(size_t idx) const {
 
 inline void ArgParser::parse(const std::vector<std::string> &args) {
     bool options_ended = false;
-    std::size_t positional_index = 0;
     std::string arg;
 
     for (std::size_t i = 0; i < args.size(); ++i) {

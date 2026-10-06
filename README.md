@@ -31,6 +31,9 @@ wget https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser
 
 ## Quick start
 
+> [!NOTE]
+> For Best Practice, see [best_practice.cpp](/best_practice.cpp)
+
 Just use this lib with 3 steps
 
 This can be used as follows
@@ -140,6 +143,16 @@ int wmain(int argc, wchar_t* argv[])
 - Combined short flags like `-vh` are not supported.
 - Call `parse()` once per instance.
 - `-h` / `--help` are not automatic — check `parser.has("help")` yourself.
+
+## Test
+
+- for Unix Like
+
+```bash
+mkdir -p bin
+
+g++ -std=c++17 -I. -o bin/test ./test_arg_parser.cpp && bin/test
+```
 
 ## License
 
