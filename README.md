@@ -50,6 +50,8 @@ This can be used as follows
 #include <iostream>
 #include <string>
 
+constexpr const char *usage = "Usage: \ng++ [options] file...\n";
+
 #ifdef _WIN32
 int wmain(int argc, wchar_t *argv[])
 #else
@@ -57,9 +59,11 @@ int main(int argc, char *argv[])
 #endif
 {
     using arg_parser::ArgType;
-    arg_parser::ArgParser parser;
-    // optional: set the program name
-    // parser.set_program_name("example");
+    arg_parser::ArgParser parser("g++", usage);
+
+    // or set the program name by set_xxx function
+    // parser.set_program_name("cpp");
+    // parser.set_usage(usage);
 
     // step 1: set the required arguments
     // [ArgType::Option] and [ArgType::Flag] support
@@ -72,7 +76,6 @@ int main(int argc, char *argv[])
         .set_description("Place the output into <file>.")
         .set_required(true);
 
-    std::string usage("Usage: g++ [options] file...");
     try {
         // step 2: parse arguments directly
         // WARN: Don't use the vector version unless you know what you're doing
@@ -88,15 +91,22 @@ int main(int argc, char *argv[])
 
     } catch (const std::exception &err) {
         std::cerr << err.what() << '\n';
-        // You should always provide a usage information
-        std::cout << parser.help(usage);
+        // if you have setted usage, just leave it empty
+        std::cout << parser.help();
         return 1;
     }
 }
 ```
 
+- compile
+
 ```bash
 g++ -std=c++17 example.cpp -o example
+```
+
+- run
+
+```bash
 ./example photo.png -o result.txt -v
 
 # output
@@ -115,6 +125,22 @@ output: result.txt
 2 pos: world
 verbose: 0
 output: bin/main
+```
+
+- auto help manual generation (for Options)
+
+```bash
+./example example.cpp main.cpp
+# output
+Required argument not provided: output
+Usage: 
+g++ [options] file...
+
+Options: 
+  --verbose, -v
+      if true, print with verbose output
+  --output, -o <value>
+      Place the output into <file>.
 ```
 
 On Windows with MinGW, use `wmain` and add `-municode`:

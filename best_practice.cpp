@@ -28,9 +28,11 @@ int wmain(int argc, wchar_t *argv[])
 int main(int argc, char *argv[])
 #endif
 {
-    arg_parser::ArgParser parser;
+    arg_parser::ArgParser parser("cp", usage);
 
-    parser.set_program_name("cp");
+    // or set by set_xxx function
+    // parser.set_program_name("cp");
+    // parser.set_usage(usage);
 
     // define the flag -r
     // it's default value will be seted as false
@@ -42,13 +44,15 @@ int main(int argc, char *argv[])
 
     } catch (const std::exception &err) {
         std::cout << err.what() << '\n';
-        std::cout << parser.help(usage);
+        // we have set the usage when creating parser
+        // so let it empty
+        std::cout << parser.help();
         return 1;
     }
 
     if (parser.size() != 2) {
         std::cout << "arguments count error\n";
-        std::cout << parser.help(usage);
+        std::cout << parser.help();
         return 1;
     }
 

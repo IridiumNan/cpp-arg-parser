@@ -75,7 +75,11 @@ class ArgParser {
     // You can visit all by [at] function
     std::vector<std::string> positional_args;
 
-    std::string program_name;
+    // _usage store the basic usage of this program
+    // set by [set_usage] function
+    std::string _usage;
+
+    std::string _program_name;
 
     // check if a argument has been registered by [add_argument] function
     bool is_registered(const std::string &name) const;
@@ -100,10 +104,34 @@ class ArgParser {
 
   public:
     /**
+     * Create a new parser with program name and usage
+     * You can set name and usage by
+     * [set_program_name] and [set_usage]*/
+    ArgParser(const std::optional<std::string> &program_name = std::nullopt,
+              const std::optional<std::string> &usage = std::nullopt) {
+        if (program_name != std::nullopt) {
+            _program_name = program_name.value();
+        }
+        if (usage != std::nullopt) {
+            _usage = usage.value();
+        }
+    }
+
+    /**
      * @brief Set the program name for usage messages.
      * if not set, it will be the first argument when program exec
      */
-    void set_program_name(const std::string &name) { program_name = name; }
+    void set_program_name(const std::string &name) { _program_name = name; }
+
+    /**
+     * @brief Set the usage of program
+     * e.g.
+     * Usage: cp [OPTION]... [-T] SOURCE DEST
+        or:  cp [OPTION]... SOURCE... DIRECTORY
+
+        The options will auto generated on [help] function
+    */
+    void set_usage(const std::string &usage) { _usage = usage; }
 
     /**
      * @brief Add a new argument to the parser, suggest chain calls to set its
@@ -133,6 +161,8 @@ class ArgParser {
      * @brief build help message for all registered arguments, return a string.
      * @param usage is the basic positional argument and program intruduction
      * the optional the flag description are auto generated
+     * If usage has been set, you don't need to provide, highly recommend set
+     * usage by [set_usage]
      */
     std::string help(const std::optional<std::string> &usage) const;
 
@@ -311,8 +341,8 @@ inline void ArgParser::check_required_arguments() const {
 inline std::vector<std::string> ArgParser::normalize_args(int argc,
                                                           char **argv) {
     std::vector<std::string> args;
-    if (program_name.empty() && argc > 0) {
-        program_name = argv[0];
+    if (_program_name.empty() && argc > 0) {
+        _program_name = argv[0];
     }
     args.reserve(argc > 1 ? argc - 1 : 0);
 
@@ -346,8 +376,8 @@ inline std::vector<std::string> ArgParser::normalize_args(int argc,
                                                           wchar_t **argv) {
     std::vector<std::string> args;
 
-    if (program_name.empty() && argc > 0) {
-        program_name = argv[0];
+    if (_program_name.empty() && argc > 0) {
+        _program_name = argv[0];
     }
     args.reserve(argc > 1 ? argc - 1 : 0);
 
@@ -419,8 +449,10 @@ ArgParser::help(const std::optional<std::string> &usage = std::nullopt) const {
     std::ostringstream help_str;
     if (usage != std::nullopt) {
         help_str << usage.value() << '\n';
+    } else if (!_usage.empty()) {
+        help_str << _usage << '\n';
     } else {
-        help_str << "Usage: " << program_name << '\n';
+        help_str << "Usage: \n" << _program_name << '\n';
     }
     help_str << "Options: \n";
 
