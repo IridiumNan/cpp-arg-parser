@@ -11,6 +11,24 @@ A lightweight C++17 single-header command-line parser with no third-party depend
 | Positional | `photo.png` |
 | End of options | `-- -photo.png` (keeps the leading dash) |
 
+## Installation
+
+As this lib is header-only, just install the `hpp` file then include it.
+
+- Install
+
+```bash
+wget https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser.hpp
+
+# You can also install by github web UI
+```
+
+- Include
+
+```cpp
+#include "arg_parser.hpp"
+```
+
 ## Quick start
 
 Just use this lib with 3 steps
