@@ -1,3 +1,45 @@
+// Introduction
+//
+// arg_parser - A lightweight C++17 single-header command-line parser.
+//
+// For usage and more examples, see repository:
+// https://github.com/IridiumNan/cpp-arg-parser
+//
+// Feedback and suggestions are welcome via GitHub Issues:
+// https://github.com/IridiumNan/cpp-arg-parser/issues
+//
+// Based on https://github.com/KAI-SHUNG/arg_parser.
+// Requires C++17. No third-party dependencies.
+
+// LICENSE
+//
+// SPDX-License-Identifier: MIT
+// See license full text as below.
+//
+// MIT License
+//
+// Copyright (c) 2024 KAI-SHUNG (original author)
+// Copyright (c) 2026 IridiumNan (modifications)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
 #ifndef ARG_PARSER_HPP
 #define ARG_PARSER_HPP
 
@@ -159,7 +201,7 @@ class ArgParser {
 
     /**
      * @brief build help message for all registered arguments, return a string.
-     * @param usage is the basic positional argument and program intruduction
+     * @param usage is the basic positional argument and program introduction
      * the optional the flag description are auto generated
      * If usage has been set, you don't need to provide, highly recommend set
      * usage by [set_usage]
