@@ -61,12 +61,13 @@ int main(int argc, char *argv[])
     // step 1: set the required arguments
     // [ArgType::Option] and [ArgType::Flag] support
     // default Flag
+    // For Flag, default value will be false, no need to set manually
     parser.add_argument("verbose", "v")
-        .set_default("false")
         .set_description("if true, print with verbose output");
 
     parser.add_argument("output", "o", ArgType::Option)
-        .set_description("Place the output into <file>.");
+        .set_description("Place the output into <file>.")
+        .set_required(true);
 
     std::string usage("Usage: g++ [options] file...");
     try {
@@ -77,13 +78,14 @@ int main(int argc, char *argv[])
         // step 3: traverse the positional args
         // fetch option value with type assign
         for (size_t i = 0; i < parser.size(); i++) {
-            std::cout << i + 1 << " pos: " << parser.at(i) << '\n';
+            std::cout << i << " pos: " << parser.at(i) << '\n';
         }
         std::cout << "verbose: " << parser.get<bool>("v") << '\n';
         std::cout << "output: " << parser.get<std::string>("o") << '\n';
 
     } catch (const std::exception &err) {
         std::cerr << err.what() << '\n';
+        // You should always provide a usage information
         std::cout << parser.help(usage);
         return 1;
     }
@@ -95,9 +97,21 @@ g++ -std=c++17 example.cpp -o example
 ./example photo.png -o result.txt -v
 
 # output
-1 pos: photo.png
+0 pos: photo.png
 verbose: 1
 output: result.txt
+```
+
+```bash
+./example -o bin/main hello -- --port world
+
+#output
+# all arguments behind -- will be treated as positional args
+0 pos: hello
+1 pos: --port
+2 pos: world
+verbose: 0
+output: bin/main
 ```
 
 On Windows with MinGW, use `wmain` and add `-municode`:

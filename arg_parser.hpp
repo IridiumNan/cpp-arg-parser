@@ -14,6 +14,8 @@
 namespace arg_parser {
 
 enum class ArgType {
+    // Flag is argument withou any value
+    // If provided, it will be set as true, else use default value
     Flag,
     Option,
 };
@@ -43,7 +45,18 @@ struct Argument {
      * else it will throw an error
      * */
     Argument &set_default(const std::string &default_val);
+
+    /**
+     * @brief Set description for this argument
+     * it will be used to build the help manual
+     * */
     Argument &set_description(const std::string &desc);
+
+    /**
+     * Set if this argument required for program
+     * if true and user not provided, it will throw error
+     * [std::invalid_argument] when fetch by [ArgParser::get]
+     * */
     Argument &set_required(bool req);
 };
 
@@ -65,15 +78,18 @@ class ArgParser {
     std::vector<std::string> positional_args;
 
     std::string program_name;
-    std::string note;
 
     // canonical return canonical name of alias or name itself
     const std::string canonical_name(const std::string &name) const;
 
+    // check if a argument has been registered by [add_argument] function
     bool is_registered(const std::string &name) const;
 
+    // check if all required argument provided
+    // if not, throw [std::invalid_argument]
     void check_required_arguments() const;
 
+    // set the first arg (always program name) as [program_name] then drop it
     std::vector<std::string> normalize_args(int argc, char **argv);
 #ifdef _WIN32
     /**
@@ -95,11 +111,6 @@ class ArgParser {
     void set_program_name(const std::string &name) { program_name = name; }
 
     /**
-     * @brief Set a note to be displayed after the help message.
-     */
-    void set_note(const std::string &n) { note = n; }
-
-    /**
      * @brief Add a new argument to the parser, suggest chain calls to set its
      * properties.
      *
@@ -107,6 +118,7 @@ class ArgParser {
      * @param alias The optional alias without leading dashes; must be unique.
      * @param type The type of the argument. default bool Flag;
      * You can also use [ArgType::Option] for arguments that require value
+     * A default value for [ArgType::Flag] will be false, no need to set
      *
      * @return A reference to the newly added argument.
      */
@@ -146,12 +158,15 @@ class ArgParser {
     /**
      * @brief
      * Get positional arguments by index
+     * it will not includes the program name itself (the argv[0])
      * if out of range, it will throw [std::out_of_range]
      * */
     std::string at(size_t idx) const;
 
     /**
      * @brief parse command-line arguments.
+     * Just provide the argc and argv directly
+     * Don't cut any arguments manually
      */
     void parse(int argc, char **argv);
 
@@ -301,8 +316,8 @@ inline void ArgParser::check_required_arguments() const {
 inline std::vector<std::string> ArgParser::normalize_args(int argc,
                                                           char **argv) {
     std::vector<std::string> args;
-    if (program_name.empty() && args.size() > 0) {
-        program_name = args.front();
+    if (program_name.empty() && argc > 0) {
+        program_name = argv[0];
     }
     args.reserve(argc > 1 ? argc - 1 : 0);
 
@@ -335,6 +350,10 @@ inline std::string ArgParser::to_utf8(const wchar_t *value) {
 inline std::vector<std::string> ArgParser::normalize_args(int argc,
                                                           wchar_t **argv) {
     std::vector<std::string> args;
+
+    if (program_name.empty() && argc > 0) {
+        program_name = argv[0];
+    }
     args.reserve(argc > 1 ? argc - 1 : 0);
 
     for (int i = 1; i < argc; ++i) {
@@ -373,6 +392,11 @@ ArgParser::add_argument(const std::string &name,
     arg->name = name;
     arg->alias = alias;
     arg->type = type;
+    // for [ArgType::Flag] set the default value as false
+    if (type == ArgType::Flag) {
+        arg->value = "false";
+    }
+
     registery.push_back(arg);
 
     // Add the argument to the name-to-argument map for both the canonical name
@@ -390,8 +414,8 @@ inline bool ArgParser::has(const std::string &name) const {
         return false;
     }
 
-    std::string canonical_name = name_to_arg.at(name)->name;
-    return parsed.count(canonical_name) > 0;
+    std::string canonical = name_to_arg.at(name)->name;
+    return parsed.count(canonical) > 0;
 }
 
 inline std::string
@@ -401,7 +425,7 @@ ArgParser::help(const std::optional<std::string> &usage = std::nullopt) const {
     if (usage != std::nullopt) {
         help_str << usage.value() << '\n';
     } else {
-        help_str << program_name << '\n';
+        help_str << "Usage: " << program_name << '\n';
     }
     help_str << "Options: \n";
 
