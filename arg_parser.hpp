@@ -18,7 +18,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2024 KAI-SHUNG (original author)
+// Copyright (c) 2026 KAI-SHUNG (original author)
 // Copyright (c) 2026 IridiumNan (modifications)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
