@@ -32,7 +32,8 @@ wget https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser
 ## Quick start
 
 > [!NOTE]
-> For Best Practice, see [best_practice.cpp](/best_practice.cpp)
+> For Best Practice  
+> See [best_practice.cpp](./best_practice.cpp)
 
 Just use this lib with 3 steps
 
@@ -77,7 +78,6 @@ int main(int argc, char *argv[])
         .set_required(true);
 
     parser.add_argument("help", "h")
-        .set_description("")
         .set_description("print help manual");
 
     try {
@@ -157,20 +157,27 @@ int wmain(int argc, wchar_t* argv[])
 
 ## API
 
+### ArgParser
+
 | Function | Description |
 | --- | --- |
 | `ArgParger(program_name, usage)` | Create a new parser |
 | `add_argument(name, alias = nullopt, type = ArgType::Flag)` | Register an argument. |
 | `set_program_name(program_name)` | Set program name for parser |
 | `set_usage(usage)` | Set usage for parser |
-| `set_default(value)` | Set a default value. |
-| `set_description(text)` | Set the help description. |
-| `set_required(true)` | Throw if the argument is not provided. |
 | `parse(argc, argv)` | Parse `main` arguments (skips `argv[0]`). |
 | `has(name)` | Check if provided, by name or alias. |
 | `get<T>(name)` | Get a typed value, by name or alias. |
 | `help()` | Return the help text. |
 | `size()` / `at(i)` | Access positional arguments. |
+
+### Argument
+
+| Function | Description |
+| --- | --- |
+| `set_default(value)` | Set a default value. |
+| `set_description(text)` | Set the help description. |
+| `set_required(true)` | Throw if the argument is not provided. |
 
 ## Notes
 
@@ -191,7 +198,7 @@ g++ -std=c++17 -I. -o bin/test ./test_arg_parser.cpp && bin/test
 
 ## License
 
-[MIT](/LICENSE)
+[MIT](./LICENSE)
 
 ## Thanks
 

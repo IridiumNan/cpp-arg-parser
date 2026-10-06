@@ -29,9 +29,7 @@ int main(int argc, char *argv[])
         .set_description("Place the output into <file>.")
         .set_required(true);
 
-    parser.add_argument("help", "h")
-        .set_description("")
-        .set_description("print help manual");
+    parser.add_argument("help", "h").set_description("print help manual");
 
     try {
         // step 2: parse arguments directly
