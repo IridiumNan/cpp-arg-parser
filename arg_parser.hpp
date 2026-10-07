@@ -419,7 +419,7 @@ inline std::vector<std::string> ArgParser::normalize_args(int argc,
     std::vector<std::string> args;
 
     if (_program_name.empty() && argc > 0) {
-        _program_name = argv[0];
+        _program_name = to_utf8(argv[0]);
     }
     args.reserve(argc > 1 ? argc - 1 : 0);
 
