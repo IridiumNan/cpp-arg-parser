@@ -2,6 +2,8 @@
 
 A lightweight C++17 single-header command-line parser with no third-party dependencies.
 
+[![CI](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml)
+
 [简体中文版本](./README.cn.md)
 
 ## Supported forms
@@ -36,6 +38,15 @@ wget https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser
 
 ```cpp
 #include "arg_parser.hpp"
+```
+
+## CMake
+
+If your project uses CMake, you can add this repository as a subdirectory:
+
+```cmake
+add_subdirectory(cpp-arg-parser)
+target_link_libraries(your_app PRIVATE arg_parser::arg_parser)
 ```
 
 ## Quick start
@@ -199,14 +210,19 @@ g++ -std=c++17 -municode example.cpp -o example.exe
 - Call `parse()` once per instance.
 - `-h` / `--help` are not automatic — check `parser.get<bool>("help")` yourself.
 
-## Test
-
-- for Unix Like
+## Build and test
 
 ```bash
-mkdir -p bin
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
 
-g++ -std=c++17 -I. -o bin/test ./test_arg_parser.cpp && bin/test
+To build examples as well:
+
+```bash
+cmake -S . -B build -DARG_PARSER_BUILD_EXAMPLES=ON
+cmake --build build
 ```
 
 ## Acknowledgements

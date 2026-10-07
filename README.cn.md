@@ -2,6 +2,8 @@
 
 一个轻量级的 C++17 单头文件命令行解析器，无第三方依赖。
 
+[![CI](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml)
+
 适合需要快速集成命令行解析的 C++ 项目。
 
 ## 支持的形式
@@ -36,6 +38,15 @@ wget https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser
 
 ```cpp
 #include "arg_parser.hpp"
+```
+
+## CMake
+
+如果你使用 CMake, 可以添加为子目录
+
+```cmake
+add_subdirectory(cpp-arg-parser)
+target_link_libraries(your_app PRIVATE arg_parser::arg_parser)
 ```
 
 ## 快速开始
@@ -199,14 +210,19 @@ g++ -std=c++17 -municode example.cpp -o example.exe
 - 每个实例只能调用一次 `parse()`。
 - `-h` / `--help` 不会自动处理 —— 请自行检查 `parser.get<bool>("help")`。
 
-## 测试
-
-- 类 Unix 系统
+## Build and test
 
 ```bash
-mkdir -p bin
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
 
-g++ -std=c++17 -I. -o bin/test ./test_arg_parser.cpp && bin/test
+To build examples as well:
+
+```bash
+cmake -S . -B build -DARG_PARSER_BUILD_EXAMPLES=ON
+cmake --build build
 ```
 
 ## 致谢
