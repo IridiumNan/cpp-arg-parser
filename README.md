@@ -2,6 +2,8 @@
 
 A lightweight C++17 single-header command-line parser with no third-party dependencies.
 
+[简体中文版本](./README.cn.md)
+
 ## Supported forms
 
 | Type | Examples |
@@ -17,11 +19,18 @@ As this lib is header-only, just install the `hpp` file then include it.
 
 - Install
 
+**command-line**
+
 ```bash
 wget https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser.hpp
 
-# You can also install by github web UI
+# or curl
+# curl -fsSL https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser.hpp -o arg_parser.hpp
 ```
+
+**browser**
+
+[github download](https://github.com/IridiumNan/cpp-arg-parser/raw/refs/heads/main/arg_parser.hpp)
 
 - Include
 
@@ -155,6 +164,10 @@ On Windows with MinGW, use `wmain` and add `-municode`:
 int wmain(int argc, wchar_t* argv[])
 ```
 
+```bash
+g++ -std=c++17 -municode example.cpp -o example.exe
+```
+
 ## API
 
 ### ArgParser
@@ -196,12 +209,12 @@ mkdir -p bin
 g++ -std=c++17 -I. -o bin/test ./test_arg_parser.cpp && bin/test
 ```
 
+## Acknowledgements
+
+Thanks to [KAI-SHUNG](https://github.com/KAI-SHUNG) who write the first version of this parser
+
+See <https://github.com/KAI-SHUNG/arg_parser>
+
 ## License
 
 [MIT](./LICENSE)
-
-## Thanks
-
-Thanks to <https://github.com/KAI-SHUNG> who write the first version of this parser
-
-See <https://github.com/KAI-SHUNG/arg_parser>
