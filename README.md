@@ -1,8 +1,8 @@
 # arg_parser
 
-A lightweight C++17 single-header command-line parser with no third-party dependencies.
+[![CI](https://github.com/IridiumNan/cpp-arg-parser/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=main)](https://github.com/IridiumNan/cpp-arg-parser/actions/workflows/cmake-multi-platform.yml)
 
-[![CI](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml)
+A lightweight C++17 single-header command-line parser with no third-party dependencies.
 
 [简体中文版本](./README.cn.md)
 

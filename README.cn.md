@@ -2,7 +2,7 @@
 
 一个轻量级的 C++17 单头文件命令行解析器，无第三方依赖。
 
-[![CI](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/IridiumNan/cpp-arg-parser/blob/main/.github/workflows/cmake-multi-platform.yml)
+[![CI](https://github.com/IridiumNan/cpp-arg-parser/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=main)](https://github.com/IridiumNan/cpp-arg-parser/actions/workflows/cmake-multi-platform.yml)
 
 适合需要快速集成命令行解析的 C++ 项目。
 
