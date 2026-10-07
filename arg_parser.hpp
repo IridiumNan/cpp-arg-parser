@@ -141,7 +141,7 @@ class ArgParser {
      * @return UTF-8 string without its terminating null byte.
      */
     static std::string to_utf8(const wchar_t *value);
-    static std::vector<std::string> normalize_args(int argc, wchar_t **argv);
+    std::vector<std::string> normalize_args(int argc, wchar_t **argv);
 #endif
 
   public:
